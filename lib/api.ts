@@ -51,7 +51,7 @@ export const addToQueue = async (patientData: any) => {
 };
 
 export const updateQueueStatus = async (id: string, status: string) => {
-  const response = await api.patch(`/queue/${id}`, { status });
+  const response = await api.put(`/queue/${id}`, { status });
   return response.data;
 };
 

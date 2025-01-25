@@ -16,11 +16,18 @@ import { useToast } from '@/hooks/use-toast';
 
 type Appointment = {
   id: string;
-  patientName: string;
-  doctorName: string;
-  date: string;
-  time: string;
+  appointmentDate: string;
   status: 'booked' | 'completed' | 'cancelled';
+  user: {
+    id: number;
+    name: string;
+    email: string;
+  };
+  doctor: {
+    id: number;
+    name: string;
+    specialization: string;
+  };
 };
 
 type AppointmentListProps = {
@@ -71,8 +78,8 @@ export function AppointmentList({ appointments }: AppointmentListProps) {
           <TableRow>
             <TableHead>Patient</TableHead>
             <TableHead>Doctor</TableHead>
+            <TableHead>Specialization</TableHead>
             <TableHead>Date</TableHead>
-            <TableHead>Time</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
@@ -80,10 +87,12 @@ export function AppointmentList({ appointments }: AppointmentListProps) {
         <TableBody>
           {appointments.map((appointment) => (
             <TableRow key={appointment.id}>
-              <TableCell>{appointment.patientName}</TableCell>
-              <TableCell>{appointment.doctorName}</TableCell>
-              <TableCell>{new Date(appointment.date).toLocaleDateString()}</TableCell>
-              <TableCell>{appointment.time}</TableCell>
+              <TableCell>{appointment.user.name}</TableCell>
+              <TableCell>{appointment.doctor.name}</TableCell>
+              <TableCell>{appointment.doctor.specialization}</TableCell>
+              <TableCell>
+                {new Date(appointment.appointmentDate).toLocaleDateString()}
+              </TableCell>
               <TableCell>{getStatusBadge(appointment.status)}</TableCell>
               <TableCell className="space-x-2">
                 {appointment.status === 'booked' && (
