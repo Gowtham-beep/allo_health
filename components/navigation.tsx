@@ -33,7 +33,7 @@ export function Navigation() {
     <nav className="border-b">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
-          <div className="text-xl font-bold">HMS</div>
+          <div className="text-xl font-bold">allo Health</div>
           <div className="flex items-center gap-4">
             {navItems.map((item) => {
               const Icon = item.icon;
