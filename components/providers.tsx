@@ -15,7 +15,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     const token = localStorage.getItem('token');
     const isLoginPage = pathname === '/login';
 
-    if (token && !isLoginPage) {//!token
+    if (!token && !isLoginPage) {
       router.push('/login');
     } else if (token && isLoginPage) {
       router.push('/dashboard');

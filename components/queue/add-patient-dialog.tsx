@@ -32,11 +32,13 @@ import { addToQueue } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 
 const formSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  age: z.string().transform((val) => parseInt(val, 10)),
-  symptoms: z.string().min(1, 'Symptoms are required'),
-  priority: z.enum(['regular', 'urgent']),
+  queueNumber: z.string().transform((val) => parseInt(val, 10)), // Convert string to number
+  status: z.enum(['Waiting', 'With Doctor', 'Completed']),
+  user: z.string().transform((val) => parseInt(val, 10)), // Convert string to number
+  doctor: z.string().transform((val) => parseInt(val, 10)), // Convert string to number
+  createdAt: z.string(),
 });
+
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -53,10 +55,11 @@ export function AddPatientDialog({
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
-      age: '',
-      symptoms: '',
-      priority: 'regular',
+      queueNumber: 1,
+      status: 'Waiting',
+      user: 1,
+      doctor: 1,
+      createdAt: new Date().toISOString(),
     },
   });
 
@@ -93,27 +96,14 @@ export function AddPatientDialog({
           >
             <FormField
               control={form.control}
-              name="name"
+              name="queueNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Patient Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter patient name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="age"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Age</FormLabel>
+                  <FormLabel>Queue Number</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
-                      placeholder="Enter patient age"
+                      placeholder="Enter queue number"
                       {...field}
                     />
                   </FormControl>
@@ -123,41 +113,76 @@ export function AddPatientDialog({
             />
             <FormField
               control={form.control}
-              name="symptoms"
+              name="status"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Symptoms</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Describe the symptoms"
-                      className="resize-none"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="priority"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Priority</FormLabel>
+                  <FormLabel>Status</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select priority" />
+                        <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="regular">Regular</SelectItem>
-                      <SelectItem value="urgent">Urgent</SelectItem>
+                      <SelectItem value="Waiting">Waiting</SelectItem>
+                      <SelectItem value="With Doctor">With Doctor</SelectItem>
+                      <SelectItem value="Completed">Completed</SelectItem>
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="user"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>User ID</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="Enter user ID"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="doctor"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Doctor ID</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="Enter doctor ID"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="createdAt"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Created At</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="datetime-local"
+                      placeholder="Enter created time"
+                      {...field}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

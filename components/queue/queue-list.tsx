@@ -20,14 +20,31 @@ import {
 import { updateQueueStatus } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 
-type QueueItem = {
+type Doctor = {
   id: string;
   name: string;
-  age: number;
-  symptoms: string;
-  priority: 'regular' | 'urgent';
+  specialization: string;
+  gender: string;
+  location: string;
+  availability: string;
+};
+
+type User = {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+type QueueItem = {
+  id: number;
+  queueNumber: number;
   status: 'Waiting' | 'With Doctor' | 'Completed';
   createdAt: string;
+  user: User;
+  doctor: Doctor;
 };
 
 type QueueListProps = {
@@ -45,8 +62,8 @@ export function QueueList({ queue }: QueueListProps) {
   const { toast } = useToast();
 
   const { mutate: updateStatus } = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) =>
-      updateQueueStatus(id, status),
+    mutationFn: ({ id, status }: { id: number; status: string }) =>
+      updateQueueStatus(id.toString(), status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['queue'] });
       toast({
@@ -74,32 +91,22 @@ export function QueueList({ queue }: QueueListProps) {
           <TableRow>
             <TableHead>Queue Number</TableHead>
             <TableHead>Name</TableHead>
-            <TableHead>Age</TableHead>
-            <TableHead>Symptoms</TableHead>
-            <TableHead>Priority</TableHead>
+            <TableHead>Doctor</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Time</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {queue.map((patient, index) => (
-            <TableRow key={patient.id}>
-              <TableCell className="font-medium">{index + 1}</TableCell>
-              <TableCell>{patient.name}</TableCell>
-              <TableCell>{patient.age}</TableCell>
-              <TableCell>{patient.symptoms}</TableCell>
-              <TableCell>
-                <Badge
-                  variant={patient.priority === 'urgent' ? 'destructive' : 'secondary'}
-                >
-                  {patient.priority}
-                </Badge>
-              </TableCell>
+          {queue.map((item) => (
+            <TableRow key={item.id}>
+              <TableCell className="font-medium">{item.queueNumber}</TableCell>
+              <TableCell>{item.user?.name||'Unknown User'}</TableCell>
+              <TableCell>{item.doctor?.name||'Unknown doctor'}</TableCell>
               <TableCell>
                 <Select
-                  value={patient.status}
+                  value={item.status}
                   onValueChange={(value) =>
-                    updateStatus({ id: patient.id, status: value })
+                    updateStatus({ id: item.id, status: value })
                   }
                 >
                   <SelectTrigger className="w-[140px]">
@@ -115,7 +122,7 @@ export function QueueList({ queue }: QueueListProps) {
                 </Select>
               </TableCell>
               <TableCell>
-                {new Date(patient.createdAt).toLocaleTimeString()}
+                {new Date(item.createdAt).toLocaleTimeString()}
               </TableCell>
             </TableRow>
           ))}

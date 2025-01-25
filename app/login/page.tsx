@@ -20,7 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 
 // Validation schema with username instead of email
 const formSchema = z.object({
-  username: z.string().min(3, 'Username must be at least 3 characters long'),
+  name: z.string().min(3, 'Username must be at least 3 characters long'),
   password: z.string().min(6, 'Password must be at least 6 characters long'),
 });
 
@@ -32,7 +32,7 @@ export default function LoginPage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: '',
+      name: '',
       password: '',
     },
   });
@@ -40,7 +40,7 @@ export default function LoginPage() {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setLoading(true);
-      const response = await login(values.username, values.password); // Use username for login
+      const response = await login(values.name, values.password); // Use username for login
       localStorage.setItem('token', response.token);
       router.push('/queue');
     } catch (error) {
@@ -69,7 +69,7 @@ export default function LoginPage() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="username"
+              name="name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Username</FormLabel>
