@@ -70,6 +70,11 @@ export const updateAppointment = async (id: string, data: any) => {
   return response.data;
 };
 
+export const deleteAppointment = async (id: string) => {
+  const response = await api.delete(`/appointments/${id}`);
+  return response.data;
+};
+
 export const getDoctors = async () => {
   const response = await api.get('/doctors');
   return response.data;

@@ -1,4 +1,5 @@
 'use client';
+import React from 'react'
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -11,14 +12,15 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { updateAppointment } from '@/lib/api';
+import { updateAppointment, deleteAppointment as deleteAppointmentApi } from '@/lib/api'; // Renamed import
 import { useToast } from '@/hooks/use-toast';
+import { Pencil, Trash2, Check, X } from 'lucide-react';
 
 type Appointment = {
   id: string;
   appointmentDate: string;
-  status: 'booked' | 'completed' | 'cancelled';
-  patientName: string; // Adjusted field to match updated API
+  status: 'booked' | 'completed' | 'cancelled' | 'Urgent';
+  patientName: string;
   doctor: {
     id: number;
     name: string;
@@ -33,6 +35,7 @@ type AppointmentListProps = {
 export function AppointmentList({ appointments }: AppointmentListProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [editingAppointmentId, setEditingAppointmentId] = React.useState<string | null>(null);
 
   const { mutate: updateStatus } = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
@@ -53,14 +56,45 @@ export function AppointmentList({ appointments }: AppointmentListProps) {
     },
   });
 
+  const { mutate: removeAppointment } = useMutation({
+    mutationFn: (id: string) => deleteAppointmentApi(id), // Use renamed import
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['appointments'] });
+      toast({
+        title: 'Success',
+        description: 'Appointment deleted successfully.',
+      });
+    },
+    onError: () => {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete appointment.',
+        variant: 'destructive',
+      });
+    },
+  });
+
   const getStatusBadge = (status: Appointment['status']) => {
     const variants = {
       booked: 'secondary',
       completed: 'default',
       cancelled: 'destructive',
+      Urgent: 'warning',
     } as const;
-
     return <Badge variant={variants[status]}>{status}</Badge>;
+  };
+
+  const handleEdit = (id: string) => {
+    setEditingAppointmentId(id);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingAppointmentId(null);
+  };
+
+  const handleSaveChanges = (id: string, status: Appointment['status']) => {
+    updateStatus({ id, status });
+    setEditingAppointmentId(null); // Close edit mode
   };
 
   if (!Array.isArray(appointments)) {
@@ -91,31 +125,38 @@ export function AppointmentList({ appointments }: AppointmentListProps) {
               </TableCell>
               <TableCell>{getStatusBadge(appointment.status)}</TableCell>
               <TableCell className="space-x-2">
-                {appointment.status === 'booked' && (
+                {editingAppointmentId === appointment.id ? (
                   <>
                     <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        updateStatus({
-                          id: appointment.id,
-                          status: 'completed',
-                        })
-                      }
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleSaveChanges(appointment.id, 'Urgent')}
                     >
-                      Complete
+                      <Check className="h-4 w-4" />
                     </Button>
                     <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        updateStatus({
-                          id: appointment.id,
-                          status: 'cancelled',
-                        })
-                      }
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleCancelEdit}
                     >
-                      Cancel
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleEdit(appointment.id)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeAppointment(appointment.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </>
                 )}
