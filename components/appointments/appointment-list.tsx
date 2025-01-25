@@ -1,6 +1,4 @@
-'use client';
-import React from 'react'
-
+import React from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Table,
@@ -36,6 +34,7 @@ export function AppointmentList({ appointments }: AppointmentListProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [editingAppointmentId, setEditingAppointmentId] = React.useState<string | null>(null);
+  const [newStatus, setNewStatus] = React.useState<Appointment['status']>('booked');
 
   const { mutate: updateStatus } = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) =>
@@ -84,16 +83,17 @@ export function AppointmentList({ appointments }: AppointmentListProps) {
     return <Badge variant={variants[status]}>{status}</Badge>;
   };
 
-  const handleEdit = (id: string) => {
+  const handleEdit = (id: string, status: Appointment['status']) => {
     setEditingAppointmentId(id);
+    setNewStatus(status); // Set the initial status when entering edit mode
   };
 
   const handleCancelEdit = () => {
     setEditingAppointmentId(null);
   };
 
-  const handleSaveChanges = (id: string, status: Appointment['status']) => {
-    updateStatus({ id, status });
+  const handleSaveChanges = (id: string) => {
+    updateStatus({ id, status: newStatus });
     setEditingAppointmentId(null); // Close edit mode
   };
 
@@ -103,6 +103,11 @@ export function AppointmentList({ appointments }: AppointmentListProps) {
 
   return (
     <div className="rounded-lg border">
+       <div className="rounded-lg border">
+      {/* Message for users */}
+      <div className="p-4 bg-yellow-100 text-yellow-800 text-center rounded-t-lg">
+        Please log in with your credentials to add or manage appointments.
+      </div>
       <Table>
         <TableHeader>
           <TableRow>
@@ -123,14 +128,29 @@ export function AppointmentList({ appointments }: AppointmentListProps) {
               <TableCell>
                 {new Date(appointment.appointmentDate).toLocaleDateString()}
               </TableCell>
-              <TableCell>{getStatusBadge(appointment.status)}</TableCell>
+              <TableCell>
+                {editingAppointmentId === appointment.id ? (
+                  <select
+                    value={newStatus}
+                    onChange={(e) => setNewStatus(e.target.value as Appointment['status'])}
+                    className="border rounded px-2 py-1"
+                  >
+                    <option value="booked">Booked</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                    <option value="Urgent">Urgent</option>
+                  </select>
+                ) : (
+                  getStatusBadge(appointment.status)
+                )}
+              </TableCell>
               <TableCell className="space-x-2">
                 {editingAppointmentId === appointment.id ? (
                   <>
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleSaveChanges(appointment.id, 'Urgent')}
+                      onClick={() => handleSaveChanges(appointment.id)}
                     >
                       <Check className="h-4 w-4" />
                     </Button>
@@ -147,7 +167,7 @@ export function AppointmentList({ appointments }: AppointmentListProps) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleEdit(appointment.id)}
+                      onClick={() => handleEdit(appointment.id, appointment.status)}
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -165,6 +185,7 @@ export function AppointmentList({ appointments }: AppointmentListProps) {
           ))}
         </TableBody>
       </Table>
+    </div>
     </div>
   );
 }

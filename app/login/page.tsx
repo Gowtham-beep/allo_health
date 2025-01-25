@@ -42,7 +42,7 @@ export default function LoginPage() {
       setLoading(true);
       const response = await login(values.name, values.password); // Use username for login
       localStorage.setItem('token', response.token);
-      router.push('/queue');
+      router.push('/dashboard');
     } catch (error) {
       toast({
         title: 'Error',

@@ -51,7 +51,7 @@ export const addToQueue = async (patientData: any) => {
 };
 
 export const updateQueueStatus = async (id: string, status: string) => {
-  const response = await api.put(`/queue/${id}`, { status });
+  const response = await api.put(`/queue/${id}/status`, { status });
   return response.data;
 };
 
@@ -66,7 +66,7 @@ export const bookAppointment = async (appointmentData: any) => {
 };
 
 export const updateAppointment = async (id: string, data: any) => {
-  const response = await api.patch(`/appointments/${id}`, data);
+  const response = await api.put(`/appointments/${id}/status`, data);
   return response.data;
 };
 
