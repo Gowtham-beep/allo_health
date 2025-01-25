@@ -18,11 +18,7 @@ type Appointment = {
   id: string;
   appointmentDate: string;
   status: 'booked' | 'completed' | 'cancelled';
-  user: {
-    id: number;
-    name: string;
-    email: string;
-  };
+  patientName: string; // Adjusted field to match updated API
   doctor: {
     id: number;
     name: string;

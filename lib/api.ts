@@ -81,7 +81,7 @@ export const addDoctor = async (doctorData: any) => {
 };
 
 export const updateDoctor = async (id: string, data: any) => {
-  const response = await api.patch(`/doctors/${id}`, data);
+  const response = await api.put(`/doctors/${id}`, data);
   return response.data;
 };
 
@@ -101,7 +101,7 @@ export const addUser = async (userData: any) => {
 };
 
 export const updateUser = async (id: string, data: any) => {
-  const response = await api.patch(`/users/${id}`, data);
+  const response = await api.put(`/users/${id}`, data);
   return response.data;
 };
 

@@ -23,11 +23,13 @@ import { Input } from '@/components/ui/input';
 import { addDoctor } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 
+// Updated form schema with new fields
 const formSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   specialization: z.string().min(2, 'Specialization is required'),
-  email: z.string().email('Invalid email address'),
-  phone: z.string().min(10, 'Phone number is required'),
+  gender: z.string().min(1, 'Gender is required'), // new field
+  location: z.string().min(2, 'Location is required'), // new field
+  availability: z.string().min(5, 'Availability is required'), // new field
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -47,8 +49,9 @@ export function AddDoctorDialog({
     defaultValues: {
       name: '',
       specialization: '',
-      email: '',
-      phone: '',
+      gender: '',
+      location: '',
+      availability: '',
     },
   });
 
@@ -109,14 +112,14 @@ export function AddDoctorDialog({
                 </FormItem>
               )}
             />
-            <FormField
+           <FormField
               control={form.control}
-              name="email"
+              name="gender"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Gender</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="Enter email" {...field} />
+                    <Input placeholder="Enter gender" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -124,12 +127,25 @@ export function AddDoctorDialog({
             />
             <FormField
               control={form.control}
-              name="phone"
+              name="location"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone</FormLabel>
+                  <FormLabel>Location</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter phone number" {...field} />
+                    <Input placeholder="Enter location" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="availability"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Availability</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter availability (e.g., 9 AM - 5 PM)" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -27,17 +27,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { bookAppointment, getDoctors } from '@/lib/api';
+import { bookAppointment, getDoctors, getUsers } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 
 const formSchema = z.object({
   patientName: z.string().min(2, 'Name must be at least 2 characters'),
-  doctorId: z.string().min(1, 'Please select a doctor'),
-  date: z.string().min(1, 'Please select a date'),
-  time: z.string().min(1, 'Please select a time'),
+  doctorId: z.number().int().positive(), // Ensure doctorId is a positive integer
+  appointmentDate: z.string().min(1, 'Please select a date'), // ISO date format
 });
 
 type FormValues = z.infer<typeof formSchema>;
+
+interface Doctor {
+  id: number;
+  name: string;
+}
+
+interface User {
+  id: number;
+  name: string;
+}
 
 export function BookAppointmentDialog({
   open,
@@ -48,18 +57,22 @@ export function BookAppointmentDialog({
 }) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { data: doctors } = useQuery({
+  const { data: doctors } = useQuery<Doctor[]>({
     queryKey: ['doctors'],
     queryFn: getDoctors,
+  });
+
+  const { data: users } = useQuery<User[]>({
+    queryKey: ['users'],
+    queryFn: getUsers,
   });
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       patientName: '',
-      doctorId: '',
-      date: '',
-      time: '',
+      doctorId: 0,
+      appointmentDate: '',
     },
   });
 
@@ -91,37 +104,61 @@ export function BookAppointmentDialog({
         </DialogHeader>
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit((data) => bookNewAppointment(data))}
+            onSubmit={form.handleSubmit((data) => {
+              bookNewAppointment(data);
+            })}
             className="space-y-4"
           >
+            {/* User Selection */}
             <FormField
               control={form.control}
               name="patientName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Patient Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter patient name" {...field} />
-                  </FormControl>
+                  <FormLabel>User Name</FormLabel>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value); // Set patientName
+                    }}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a user" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {users?.map((user: User) => (
+                        <SelectItem key={user.id} value={user.name}>
+                          {user.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            {/* Doctor Selection */}
             <FormField
               control={form.control}
               name="doctorId"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Doctor</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={(value) => field.onChange(Number(value))}
+                    defaultValue={field.value.toString()}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a doctor" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {doctors?.map((doctor) => (
-                        <SelectItem key={doctor.id} value={doctor.id}>
+                      {doctors?.map((doctor: Doctor) => (
+                        <SelectItem key={doctor.id} value={doctor.id.toString()}>
                           {doctor.name}
                         </SelectItem>
                       ))}
@@ -131,12 +168,14 @@ export function BookAppointmentDialog({
                 </FormItem>
               )}
             />
+
+            {/* Appointment Date */}
             <FormField
               control={form.control}
-              name="date"
+              name="appointmentDate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Date</FormLabel>
+                  <FormLabel>Appointment Date</FormLabel>
                   <FormControl>
                     <Input type="date" {...field} />
                   </FormControl>
@@ -144,19 +183,7 @@ export function BookAppointmentDialog({
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="time"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Time</FormLabel>
-                  <FormControl>
-                    <Input type="time" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+
             <div className="flex justify-end gap-4">
               <Button
                 type="button"
